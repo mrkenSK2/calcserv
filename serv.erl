@@ -45,6 +45,18 @@ loop(Procs) ->
             Pid = whereis(list_to_atom(lists:nth(1, Args))),
             Pid ! {"%", list_to_integer(lists:nth(2, Args))},
             loop(Procs);
+        "M+" ->
+            Pid = whereis(list_to_atom(lists:nth(1, Args))),
+            Pid ! {"M+"},
+            loop(Procs);
+        "M-" ->
+            Pid = whereis(list_to_atom(lists:nth(1, Args))),
+            Pid ! {"M-"},
+            loop(Procs);
+        "RM" ->
+            Pid = whereis(list_to_atom(lists:nth(1, Args))),
+            Pid ! {"RM"},
+            loop(Procs);
         _ ->
             io:fwrite(Args ++ "under"),
             loop([])
@@ -82,6 +94,13 @@ calc(State) ->
             Update = State#state.value * Num / 100,
             io:fwrite(integer_to_list(Update) ++ "\n"),
             calc(State#state{value = Update});
+        {"M+"} ->
+            calc(State#state{mem = State#state.mem + State#state.value});
+        {"M-"} ->
+            calc(State#state{mem = State#state.mem - State#state.value});
+        {"RM"} ->
+            io:fwrite(integer_to_list(State#state.mem) ++ "\n"),
+            calc(State);
         _ ->
             io:format("No match.~n")
     end.
