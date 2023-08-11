@@ -104,3 +104,11 @@ calc(State) ->
         _ ->
             io:format("No match.~n")
     end.
+
+print_list([]) ->
+    io:fwrite("no data in list\n");
+print_list([Head]) ->
+    io:fwrite(Head);
+print_list([Head | Tail]) ->
+    io:fwrite(Head),
+    print_list(Tail).
