@@ -1,38 +1,87 @@
 -module(serv).
--export([start/0, gen_calc/1]).
--record(state, {value}).
+-export([start/0, gen_calc/1, calc/1]).
+-record(state, {value = 0, mem = 0, gt = 0}).
 
 start() ->
     io:fwrite("server start\n"),
-    loop().
+    loop([]).
 
-loop() ->
+loop(Procs) ->
+    % print_list(Procs),
     [Cmd | Args] = string:tokens(io:get_line(""), " \n"),
-    io:fwrite(integer_to_list(length(Args)) ++ "\n"),
     case Cmd of
-    % spawn(serv, calc, [1]),
-        "exit" -> "Leaving server.";
+        "exit" -> 
+            % 全てkill
+            "Leaving server.";
 
         "create"  ->
             case length(Args) of
-                1 -> gen_calc(lists:nth(1, Args));
-                _ -> io:fwrite("please input new server name\n")
-            end,
-            loop();
-        "add" ->
-            io:fwrite("add cmd");
+                1 ->
+                    gen_calc(lists:nth(1, Args)),
+                    loop(lists:sort(lists:append(Procs, [lists:nth(1, Args)])));
+                _ -> 
+                    io:fwrite("please input new server name\n"
+                              "usage: create <servername>\n"),
+                    loop(Procs)            
+            end;
+        % len(arg == 1)もほしい
+        "+" ->
+            Pid = whereis(list_to_atom(lists:nth(1, Args))),
+            Pid ! {"+", list_to_integer(lists:nth(2, Args))},
+            loop(Procs);
+        "-" ->
+            Pid = whereis(list_to_atom(lists:nth(1, Args))),
+            Pid ! {"-", list_to_integer(lists:nth(2, Args))},
+            loop(Procs);
+        "*" ->
+            Pid = whereis(list_to_atom(lists:nth(1, Args))),
+            Pid ! {"*", list_to_integer(lists:nth(2, Args))},
+            loop(Procs);
+        "/" ->
+            Pid = whereis(list_to_atom(lists:nth(1, Args))),
+            Pid ! {"/", list_to_integer(lists:nth(2, Args))},
+            loop(Procs);
+        "%" ->
+            Pid = whereis(list_to_atom(lists:nth(1, Args))),
+            Pid ! {"%", list_to_integer(lists:nth(2, Args))},
+            loop(Procs);
         _ ->
-            io:fwrite(Args),
-            loop()
+            io:fwrite(Args ++ "under"),
+            loop([])
     end.
 
 gen_calc(Process_name) ->
     % 被ってたら
-    Pid = spawn(fun() -> 1 end),
-    register(list_to_atom(Process_name), Pid).
+    Pid = spawn(serv, calc, [#state{value=0}]),
+    try register(list_to_atom(Process_name), Pid)  of
+        _ -> ok
+    catch
+        error:badarg -> io:fwrite("name is in use\n")
+    end.
 
-calc(#state(a, b)) ->
+
+calc(State) ->
     receive
-        {Exit, v}
-    af
-    0.
+        {"+", Num} ->
+            Update = State#state.value + Num,
+            io:fwrite(integer_to_list(Update) ++ "\n"),
+            calc(State#state{value = Update});
+        {"-", Num} ->
+            Update = State#state.value - Num,
+            io:fwrite(integer_to_list(Update) ++ "\n"),
+            calc(State#state{value = Update});
+        {"*", Num} ->
+            Update = State#state.value * Num,
+            io:fwrite(integer_to_list(Update) ++ "\n"),
+            calc(State#state{value = Update});
+        {"/", Num} ->
+            Update = State#state.value / Num,
+            io:fwrite(integer_to_list(Update) ++ "\n"),
+            calc(State#state{value = Update});
+        {"%", Num} ->
+            Update = State#state.value * Num / 100,
+            io:fwrite(integer_to_list(Update) ++ "\n"),
+            calc(State#state{value = Update});
+        _ ->
+            io:format("No match.~n")
+    end.
