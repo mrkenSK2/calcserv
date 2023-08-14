@@ -57,6 +57,10 @@ loop(Procs) ->
             Pid = whereis(list_to_atom(lists:nth(1, Args))),
             Pid ! {"RM"},
             loop(Procs);
+        "CM" ->
+            Pid = whereis(list_to_atom(lists:nth(1, Args))),
+            Pid ! {"CM"},
+            loop(Procs);
         _ ->
             io:fwrite(Args ++ "under"),
             loop([])
@@ -70,7 +74,6 @@ gen_calc(Process_name) ->
     catch
         error:badarg -> io:fwrite("name is in use\n")
     end.
-
 
 calc(State) ->
     receive
@@ -101,6 +104,8 @@ calc(State) ->
         {"RM"} ->
             io:fwrite(integer_to_list(State#state.mem) ++ "\n"),
             calc(State);
+        {"CM"} ->
+            calc(State#state{mem = 0});
         _ ->
             io:format("No match.~n")
     end.
