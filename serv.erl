@@ -79,30 +79,35 @@ calc(State) ->
     receive
         {"+", Num} ->
             Update = State#state.value + Num,
-            io:fwrite(integer_to_list(Update) ++ "\n"),
+            io:fwrite(number_to_list(Update) ++ "\n"),
             calc(State#state{value = Update});
         {"-", Num} ->
             Update = State#state.value - Num,
-            io:fwrite(integer_to_list(Update) ++ "\n"),
+            io:fwrite(number_to_list(Update) ++ "\n"),
             calc(State#state{value = Update});
         {"*", Num} ->
             Update = State#state.value * Num,
-            io:fwrite(integer_to_list(Update) ++ "\n"),
+            io:fwrite(number_to_list(Update) ++ "\n"),
             calc(State#state{value = Update});
         {"/", Num} ->
-            Update = State#state.value / Num,
-            io:fwrite(integer_to_list(Update) ++ "\n"),
-            calc(State#state{value = Update});
+            try Update = State#state.value / Num of
+                _ -> 
+                    io:fwrite(number_to_list(Update) ++ "\n"),
+                    calc(State#state{value = Update})
+            catch
+                error:badarith -> io:fwrite("division by zero\n"),
+                calc(State)
+            end;
         {"%", Num} ->
             Update = State#state.value * Num / 100,
-            io:fwrite(integer_to_list(Update) ++ "\n"),
+            io:fwrite(number_to_list(Update) ++ "\n"),
             calc(State#state{value = Update});
         {"M+"} ->
             calc(State#state{mem = State#state.mem + State#state.value});
         {"M-"} ->
             calc(State#state{mem = State#state.mem - State#state.value});
         {"RM"} ->
-            io:fwrite(integer_to_list(State#state.mem) ++ "\n"),
+            io:fwrite(number_to_list(State#state.mem) ++ "\n"),
             calc(State);
         {"CM"} ->
             calc(State#state{mem = 0});
@@ -117,3 +122,8 @@ print_list([Head]) ->
 print_list([Head | Tail]) ->
     io:fwrite(Head),
     print_list(Tail).
+
+number_to_list(Num) when is_integer(Num) ->
+    integer_to_list(Num);
+number_to_list(Num) when is_float(Num) ->
+    float_to_list(Num).
