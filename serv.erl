@@ -12,6 +12,7 @@ loop(Procs) ->
     case Cmd of
         "exit" -> 
             % 全てkill
+            kill_proclist(Procs),
             "Leaving server.";
 
         "create"  ->
@@ -117,6 +118,8 @@ calc(State) ->
             calc(State);
         {"CM"} ->
             calc(State#state{mem = 0});
+        {kill} ->
+            exit(success);
         _ ->
             io:format("No match.~n")
     end.
@@ -133,3 +136,10 @@ number_to_list(Num) when is_integer(Num) ->
     integer_to_list(Num);
 number_to_list(Num) when is_float(Num) ->
     float_to_list(Num).
+
+kill_proclist([]) ->
+    ok;
+kill_proclist([Head | Tail]) ->
+    Pid = whereis(list_to_atom(Head)),
+    Pid ! {kill},
+    kill_proclist(Tail).
