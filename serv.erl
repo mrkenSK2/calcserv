@@ -17,8 +17,12 @@ loop(Procs) ->
         "create"  ->
             case length(Args) of
                 1 ->
-                    gen_calc(lists:nth(1, Args)),
-                    loop(lists:sort(lists:append(Procs, [lists:nth(1, Args)])));
+                    try gen_calc(lists:nth(1, Args)) of
+                        _ -> loop(lists:sort(lists:append(Procs, [lists:nth(1, Args)])))
+                    catch
+                        Throw ->
+                            loop(Procs)
+                    end;
                 _ -> 
                     io:fwrite("please input new server name\n"
                               "usage: create <servername>\n"),
@@ -72,7 +76,9 @@ gen_calc(Process_name) ->
     try register(list_to_atom(Process_name), Pid)  of
         _ -> ok
     catch
-        error:badarg -> io:fwrite("name is in use\n")
+        error:badarg -> 
+            io:fwrite("name is in use\n"),
+            throw(fail)
     end.
 
 calc(State) ->
