@@ -13,6 +13,9 @@ loop(Procs) ->
             % 全てkill
             kill_proclist(Procs),
             "Leaving server.";
+        "show" ->
+            print_list(Procs),
+            loop(Procs);
         "create"  ->
             case length(Args) of
                 1 ->
@@ -135,9 +138,9 @@ calc(State) ->
 print_list([]) ->
     io:fwrite("no data in list\n");
 print_list([Head]) ->
-    io:fwrite(Head);
+    io:fwrite(Head ++ "\n");
 print_list([Head | Tail]) ->
-    io:fwrite(Head),
+    io:fwrite(Head ++ " "),
     print_list(Tail).
 
 number_to_list(Num) when is_integer(Num) ->
