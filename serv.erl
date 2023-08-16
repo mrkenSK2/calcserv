@@ -7,14 +7,12 @@ start() ->
     loop([]).
 
 loop(Procs) ->
-    % print_list(Procs),
     [Cmd | Args] = string:tokens(io:get_line(""), " \n"),
     case Cmd of
         "exit" -> 
             % 全てkill
             kill_proclist(Procs),
             "Leaving server.";
-
         "create"  ->
             case length(Args) of
                 1 ->
@@ -28,6 +26,16 @@ loop(Procs) ->
                     io:fwrite("please input new server name\n"
                               "usage: create <servername>\n"),
                     loop(Procs)            
+            end;
+        "stop"  ->
+            case length(Args) of
+                0 ->
+                    io:fwrite("please input server name you wish to stop\n"
+                              "usage: stop <servername>...\n"),
+                    loop(Procs);
+                _ ->
+                    kill_proclist(Args),
+                    loop(delete_elements(Args, Procs))        
             end;
         % len(arg == 1)もほしい
         "+" ->
@@ -143,3 +151,9 @@ kill_proclist([Head | Tail]) ->
     Pid = whereis(list_to_atom(Head)),
     Pid ! {kill},
     kill_proclist(Tail).
+
+delete_elements([], List) ->
+    List;
+delete_elements(Elements, List) ->
+    NewList = lists:delete(hd(Elements), List),
+    delete_elements(tl(Elements), NewList).
