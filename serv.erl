@@ -41,45 +41,45 @@ loop(Procs) ->
                     loop(delete_elements(Args, Procs))        
             end;
         % len(arg == 1)もほしい
-        "+" ->
-            Pid = whereis(list_to_atom(lists:nth(1, Args))),
-            Pid ! {"+", list_to_integer(lists:nth(2, Args))},
-            loop(Procs);
-        "-" ->
-            Pid = whereis(list_to_atom(lists:nth(1, Args))),
-            Pid ! {"-", list_to_integer(lists:nth(2, Args))},
-            loop(Procs);
-        "*" ->
-            Pid = whereis(list_to_atom(lists:nth(1, Args))),
-            Pid ! {"*", list_to_integer(lists:nth(2, Args))},
-            loop(Procs);
-        "/" ->
-            Pid = whereis(list_to_atom(lists:nth(1, Args))),
-            Pid ! {"/", list_to_integer(lists:nth(2, Args))},
-            loop(Procs);
-        "%" ->
-            Pid = whereis(list_to_atom(lists:nth(1, Args))),
-            Pid ! {"%", list_to_integer(lists:nth(2, Args))},
-            loop(Procs);
-        "M+" ->
-            Pid = whereis(list_to_atom(lists:nth(1, Args))),
-            Pid ! {"M+"},
-            loop(Procs);
-        "M-" ->
-            Pid = whereis(list_to_atom(lists:nth(1, Args))),
-            Pid ! {"M-"},
-            loop(Procs);
-        "RM" ->
-            Pid = whereis(list_to_atom(lists:nth(1, Args))),
-            Pid ! {"RM"},
-            loop(Procs);
-        "CM" ->
-            Pid = whereis(list_to_atom(lists:nth(1, Args))),
-            Pid ! {"CM"},
-            loop(Procs);
         _ ->
-            io:fwrite(Args ++ "under"),
-            loop([])
+            case Pid = whereis(list_to_atom(lists:nth(1, Args))) of
+                undefined -> 
+                    io:fwrite("such proc not exist\n"),
+                    loop(Procs);
+                _ ->
+                    case Cmd of
+                    "+" ->
+                        Pid ! {"+", list_to_integer(lists:nth(2, Args))},
+                        loop(Procs);
+                    "-" ->
+                        Pid ! {"-", list_to_integer(lists:nth(2, Args))},
+                        loop(Procs);
+                    "*" ->
+                        Pid ! {"*", list_to_integer(lists:nth(2, Args))},
+                        loop(Procs);
+                    "/" ->
+                        Pid ! {"/", list_to_integer(lists:nth(2, Args))},
+                        loop(Procs);
+                    "%" ->
+                        Pid ! {"%", list_to_integer(lists:nth(2, Args))},
+                        loop(Procs);
+                    "M+" ->
+                        Pid ! {"M+"},
+                        loop(Procs);
+                    "M-" ->
+                        Pid ! {"M-"},
+                        loop(Procs);
+                    "RM" ->
+                        Pid ! {"RM"},
+                        loop(Procs);
+                    "CM" ->
+                        Pid ! {"CM"},
+                        loop(Procs);
+                    _ ->
+                        io:fwrite(Args ++ "under"),
+                        loop(Procs)
+            end
+        end
     end.
 
 gen_calc(Process_name) ->
